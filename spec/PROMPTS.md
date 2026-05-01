@@ -24,3 +24,5 @@
 3) Always re-fetch and overwrite
 4) Not applicable due to menu fetch being a separate subcommand
 ```
+
+6) Read @PLAN.md and follow the instructions for Stage 4

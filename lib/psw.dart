@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'src/api_client.dart';
 import 'src/env.dart';
+import 'src/menu_index.dart';
 import 'src/orders_source.dart';
 
 class OrderDownloader {
@@ -133,5 +135,84 @@ Future<int> runMenuPipeline({required File menuFile}) async {
   }
   menuFile.writeAsStringSync(body);
   stdout.writeln('saved ${menuFile.path}');
+  return 0;
+}
+
+Future<int> runReportPipeline({
+  required File menuFile,
+  required Directory ordersDir,
+}) async {
+  final MenuIndex menu;
+  try {
+    menu = MenuIndex.readFile(menuFile);
+  } on MenuIndexException catch (e) {
+    stderr.writeln(e.message);
+    return 1;
+  }
+
+  if (!ordersDir.existsSync()) {
+    stderr.writeln('${ordersDir.path} not found');
+    return 1;
+  }
+
+  final orderFiles = ordersDir
+      .listSync()
+      .whereType<File>()
+      .where((f) => f.path.endsWith('.json'))
+      .toList()
+    ..sort((a, b) => a.path.compareTo(b.path));
+
+  for (final file in orderFiles) {
+    final orderId = file.uri.pathSegments.last.replaceAll('.json', '');
+    final dynamic decoded;
+    try {
+      decoded = jsonDecode(file.readAsStringSync());
+    } on FormatException catch (e) {
+      stderr.writeln('${file.path}: invalid JSON (${e.message})');
+      continue;
+    }
+    if (decoded is! Map<String, dynamic>) {
+      stderr.writeln('${file.path}: expected top-level JSON object');
+      continue;
+    }
+    final orderDate = decoded['orderDate'] is String
+        ? decoded['orderDate'] as String
+        : '';
+    final positions = decoded['orderPositions'];
+    if (positions is! Map<String, dynamic>) {
+      stderr.writeln('${file.path}: expected "orderPositions" to be an object');
+      continue;
+    }
+
+    stdout.writeln(
+      orderDate.isEmpty ? 'Order $orderId:' : 'Order $orderId ($orderDate):',
+    );
+
+    final keys = positions.keys.toList()
+      ..sort((a, b) {
+        final ai = int.tryParse(a);
+        final bi = int.tryParse(b);
+        if (ai != null && bi != null) return ai.compareTo(bi);
+        return a.compareTo(b);
+      });
+
+    for (final key in keys) {
+      final entry = positions[key];
+      if (entry is! Map<String, dynamic>) continue;
+      final positionId = entry['positionID']?.toString() ?? '';
+      final price = entry['price'];
+      final amount = entry['amount'];
+      final name = menu.nameFor(positionId);
+      if (name == null) {
+        stderr.writeln(
+          'warn: order $orderId positionID $positionId not in menu',
+        );
+        stdout.writeln('  <unknown $positionId> | $price | $amount');
+      } else {
+        stdout.writeln('  $name | $price | $amount');
+      }
+    }
+  }
+
   return 0;
 }
