@@ -69,7 +69,7 @@ class DownloadSummary {
       'total=$total fetched=$fetched skipped=$skipped failed=$failed';
 }
 
-Future<int> runCli({
+Future<int> runOrdersPipeline({
   required File envFile,
   required File historyFile,
   required Directory outputDir,
@@ -116,4 +116,22 @@ Future<int> runCli({
   } finally {
     client.close();
   }
+}
+
+Future<int> runMenuPipeline({required File menuFile}) async {
+  final String body;
+  try {
+    body = await ApiClient.fetchMenu();
+  } on ApiException catch (e) {
+    stderr.writeln('failed to fetch menu: $e');
+    return 1;
+  }
+
+  final parent = menuFile.parent;
+  if (!parent.existsSync()) {
+    parent.createSync(recursive: true);
+  }
+  menuFile.writeAsStringSync(body);
+  stdout.writeln('saved ${menuFile.path}');
+  return 0;
 }

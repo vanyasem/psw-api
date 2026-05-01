@@ -15,3 +15,12 @@
 ```
 
 3) Read @PLAN.md and follow the instructions for Stage 2
+4) Read @PLAN.md and follow the instructions for Stage 3
+5)
+
+```text
+1) Run menu fetch as a separate subcommand. Make refresh menu & get orders two different subcommands. By default (if no command specified) print the usage guide.
+2) Output the file as `data/menu.json`
+3) Always re-fetch and overwrite
+4) Not applicable due to menu fetch being a separate subcommand
+```

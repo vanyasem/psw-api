@@ -13,6 +13,26 @@ class ApiClient {
   static final Uri _orderHistory = Uri.parse(
     'https://dataexchange.psweb.pro/api/order.getHistory',
   );
+  static final Uri _menu = Uri.parse(
+    'https://dataexchange.psweb.pro/api_v5/mobile/1-menu.pswjson',
+  );
+
+  static Future<String> fetchMenu({http.Client? client}) async {
+    final c = client ?? http.Client();
+    try {
+      final response = await c.get(_menu);
+      if (response.statusCode != 200) {
+        throw ApiException(
+          'HTTP ${response.statusCode} for menu',
+          statusCode: response.statusCode,
+          body: response.body,
+        );
+      }
+      return response.body;
+    } finally {
+      if (client == null) c.close();
+    }
+  }
 
   final String accessToken;
   final String userId;
