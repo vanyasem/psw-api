@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__context7__query-docs",
+      "mcp__dart__pub_dev_search",
+      "mcp__context7__resolve-library-id",
+      "mcp__dart__analyze_files",
+      "mcp__dart__dart_format"
+    ]
+  }
+}
