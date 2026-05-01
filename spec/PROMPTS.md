@@ -26,3 +26,4 @@
 ```
 
 6) Read @PLAN.md and follow the instructions for Stage 4
+7) `positionID 586` should be named `Палочки для суши`

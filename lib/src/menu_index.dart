@@ -31,7 +31,7 @@ class MenuIndex {
         '$source: expected "positions" to be an object',
       );
     }
-    final names = <String, String>{};
+    final names = <String, String>{..._retiredItems};
     for (final category in positions.values) {
       if (category is! Map<String, dynamic>) continue;
       for (final entry in category.entries) {
@@ -46,6 +46,12 @@ class MenuIndex {
     return MenuIndex(names);
   }
 }
+
+// Retired items missing from the current menu but still referenced by old
+// orders.
+const Map<String, String> _retiredItems = {
+  '586': 'Палочки для суши',
+};
 
 class MenuIndexException implements Exception {
   MenuIndexException(this.message);
