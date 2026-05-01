@@ -6,17 +6,17 @@ class OrdersSource {
     if (!file.existsSync()) {
       throw OrdersSourceException('${file.path} not found');
     }
-    final decoded = jsonDecode(file.readAsStringSync());
+    return parseOrderIds(file.readAsStringSync(), source: file.path);
+  }
+
+  static List<String> parseOrderIds(String json, {String source = 'response'}) {
+    final decoded = jsonDecode(json);
     if (decoded is! Map<String, dynamic>) {
-      throw OrdersSourceException(
-        '${file.path}: expected top-level JSON object',
-      );
+      throw OrdersSourceException('$source: expected top-level JSON object');
     }
     final orders = decoded['orders'];
     if (orders is! Map<String, dynamic>) {
-      throw OrdersSourceException(
-        '${file.path}: expected "orders" to be an object',
-      );
+      throw OrdersSourceException('$source: expected "orders" to be an object');
     }
     final ids = <String>[];
     for (final entry in orders.values) {

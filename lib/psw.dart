@@ -71,7 +71,7 @@ class DownloadSummary {
 
 Future<int> runCli({
   required File envFile,
-  required File ordersFile,
+  required File historyFile,
   required Directory outputDir,
 }) async {
   final Env env;
@@ -82,16 +82,33 @@ Future<int> runCli({
     return 1;
   }
 
-  final List<String> orderIds;
-  try {
-    orderIds = OrdersSource.readOrderIds(ordersFile);
-  } on OrdersSourceException catch (e) {
-    stderr.writeln(e.message);
-    return 1;
-  }
-
   final client = ApiClient(accessToken: env.accessToken, userId: env.userId);
   try {
+    final String historyBody;
+    try {
+      historyBody = await client.getOrderHistory();
+    } on ApiException catch (e) {
+      stderr.writeln('failed to fetch order history: $e');
+      return 1;
+    }
+
+    final parent = historyFile.parent;
+    if (!parent.existsSync()) {
+      parent.createSync(recursive: true);
+    }
+    historyFile.writeAsStringSync(historyBody);
+
+    final List<String> orderIds;
+    try {
+      orderIds = OrdersSource.parseOrderIds(
+        historyBody,
+        source: 'order.getHistory',
+      );
+    } on OrdersSourceException catch (e) {
+      stderr.writeln(e.message);
+      return 1;
+    }
+
     final downloader = OrderDownloader(client: client, outputDir: outputDir);
     final summary = await downloader.run(orderIds);
     stdout.writeln(summary);

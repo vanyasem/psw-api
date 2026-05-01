@@ -13,3 +13,5 @@
 7) Create an `.env.example` with empty values
 8)  Dart SDK constraint is `sdk: '>=3.11.0 <4.0.0'`
 ```
+
+3) Read @PLAN.md and follow the instructions for Stage 2
